@@ -8,6 +8,7 @@ class org:
     def __init__(self,sex='m',gene1='0.5',age=0):
         self._sex = sex
         self._gene1 = gene1
+        self._age = age
         
     def sex(self):
         return self._sex
