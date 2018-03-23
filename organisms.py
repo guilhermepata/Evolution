@@ -9,7 +9,7 @@ from random import uniform
 from numpy import exp
 
 def sigmoid(x):
-    return 1/(1+exp(-100*x))-0.5
+    return 2/(1+exp(-x))-1
 
 def w_choice(seq):
     total_prob = sum(item[1] for item in seq)
