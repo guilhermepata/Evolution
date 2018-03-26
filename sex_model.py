@@ -178,15 +178,23 @@ class pop:
                 
                 #allele.set_freq('hetero',new_hetero_a/new_size)
                 
-                new_homo_from_homo = ma.num('homo')*ma.offspring('homo')*(ma.freq('homo')*1+ma.freq('hetero')*0.5)
+                from_homo = ma.num('homo')*ma.offspring('homo')
                 
-                new_hetero_from_homo = ma.num('homo')*ma.offspring('homo')*(ma.freq('hetero')*0.5+(1-ma.freq())*1)
+                new_homo_from_homo = from_homo*(ma.freq('homo')*1+ma.freq('hetero')*0.5+(1-ma.freq())*0)
                 
-                #print(ma.offspring('hetero'))    
+                new_hetero_from_homo = from_homo*(ma.freq('homo')*0+ma.freq('hetero')*0.5+(1-ma.freq())*1)
                 
-                new_homo_from_hetero = ma.num('hetero')*ma.offspring('hetero')*(ma.freq('homo')*0.5+ma.freq('hetero')*0.25)
+                #print(ma.offspring('hetero'))
                 
-                new_hetero_from_hetero = ma.num('hetero')*ma.offspring('hetero')*(ma.freq('homo')*0.5+ma.freq('hetero')*0.5+(1-ma.freq())*0.5)
+                from_hetero = ma.num('hetero')*ma.offspring('hetero')
+                
+                new_homo_from_hetero = from_hetero*(ma.freq('homo')*0.5+ma.freq('hetero')*0.25+(1-ma.freq())*0)
+                
+                new_hetero_from_hetero = from_hetero*(ma.freq('homo')*0.5+ma.freq('hetero')*0.5+(1-ma.freq())*0.5)
+                
+                #new_other_from_hetero = from_hetero(ma.freq('homo')*0+ma.freq('hetero')*0.25+(1-ma.freq())*0.5)
+                
+                #from_other = sum([b.num('homo')*b.offspring('homo') for b in m_locus.genepool() if b is not ma])
                                 
                 allele.set_freq('homo',(new_homo_from_homo+new_homo_from_hetero+ma.num('homo')*(1-ma.deathrate('homo')))/new_size)
                 
