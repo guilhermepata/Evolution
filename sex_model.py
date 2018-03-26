@@ -142,75 +142,26 @@ class pop:
             
             resize = sum([ a.num('homo')*(a.offspring('homo')+a.survival('homo')) + 0.5*a.num('hetero')*(a.offspring('hetero')+a.survival('hetero')) for a in m_locus.genepool() ])  
             
-            #print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
+            print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
             
             for allele in locus.genepool():
                 
                 ma = [a for a in m_locus.genepool() if a.val() == allele.val()][0]
                 
-                #list_of_homo_offspring = [ ma.num('homo')*ma.freq('homo')*2*ma.offspring('homo')*1, ma.num('homo')*ma.freq('hetero')*(ma.offspring('homo')+ma.offspring('hetero'))*0.5, ma.num('hetero')*ma.freq('hetero')*2*ma.offspring('hetero')*0.25 ]
-                
-                #new_homo_a = sum( list_of_homo_offspring ) - ma.num('homo')*ma.survival('homo')
-                
-                #allele.set_freq('homo',new_homo_a/new_size)
-                
-                #list_of_hetero_offspring1 = [ ma.num('homo')*ma.freq('hetero')*(ma.offspring('homo')+ma.offspring('hetero'))*0.5, ma.num('hetero')*ma.freq('hetero')*2*ma.offspring('hetero')*0.5 ]
-                
-                #if (1-ma.freq())>0:
-                #    print(sum([b.freq('homo') for b in m_locus.genepool() if b is not ma]))
-                #    if sum([b.freq('homo') for b in m_locus.genepool() if b is not ma])!=0:
-                #        avg_other_homo_offspring = sum([b.offspring('homo')*b.freq('homo') for b in m_locus.genepool() if b is not ma])/sum([b.freq('homo') for b in m_locus.genepool() if b is not ma])
-                #    else:
-                #        avg_other_homo_offspring = 0
-                #
-                #    print((1-ma.freq()-sum([b.freq('homo') for b in m_locus.genepool() if b is not ma])))
-                #    if (1-ma.freq()-sum([b.freq('homo') for b in m_locus.genepool() if b is not ma]))!=0:
-                #        avg_other_hetero_offspring = sum([b.offspring('hetero',ma)*b.freq('hetero') for b in m_locus.genepool() if b is not ma])/sum([b.freq('hetero') for b in m_locus.genepool() if b is not ma])
-                #    else:
-                #        avg_other_hetero_offspring = 0
-                #
-                #    avg_other_offspring = ( avg_other_homo_offspring * sum([b.freq('homo') for b in m_locus.genepool() if b is not ma]) + avg_other_hetero_offspring * (1-ma.freq()-sum([b.freq('homo') for b in m_locus.genepool() if b is not ma])) ) / (1-ma.freq())
-                #
-                #else:
-                #    avg_other_offspring = 0
-                #
-                #list_of_hetero_offspring2 = [ ma.num('homo')*(1-ma.freq())*(ma.offspring('homo')+avg_other_offspring)*1, ma.num('hetero')*(1-ma.freq())*(ma.offspring('hetero')+avg_other_offspring)*0.5]
-                #
-                #new_hetero_a = sum( list_of_hetero_offspring1 + list_of_hetero_offspring2 ) - ma.num('hetero')*ma.survival('hetero')
-                
-                #allele.set_freq('hetero',new_hetero_a/new_size)
-                
                 from_homo = ma.num('homo')*ma.offspring('homo')
-                
                 new_homo_from_homo = from_homo*(ma.freq('homo')*1+ma.freq('hetero')*0.5+(1-ma.freq())*0)
-                
                 new_hetero_from_homo = from_homo*(ma.freq('homo')*0+ma.freq('hetero')*0.5+(1-ma.freq())*1)
                 
-                #print(ma.offspring('hetero'))
-                
                 from_hetero = ma.num('hetero')*ma.offspring('hetero')
-                
                 new_homo_from_hetero = from_hetero*(ma.freq('homo')*0.5+ma.freq('hetero')*0.25+(1-ma.freq())*0)
-                
                 new_hetero_from_hetero = from_hetero*(ma.freq('homo')*0.5+ma.freq('hetero')*0.5+(1-ma.freq())*0.5)
                 
-                #new_other_from_hetero = from_hetero(ma.freq('homo')*0+ma.freq('hetero')*0.25+(1-ma.freq())*0.5)
-                
                 from_other = sum([b.num('homo')*b.offspring('homo') for b in m_locus.genepool() if b is not ma])
+                #from_other2 = sum([])
+                new_hetero_from_other = from_other*(ma.freq('homo')*1+ma.freq('hetero')*0.5+(1-ma.freq())*0)
                 
-                new = from_homo + from_hetero + from_other
-                
-                survived = ma.num('homo')*ma.survival('homo')+ma.num('hetero')*ma.survival('hetero')+sum([b.num('homo')*b.survival('homo') for b in m_locus.genepool() if b is not ma])
-                                
-                new_size = survived + new
-                
-                print(allele.val(), [from_homo], [from_hetero], [from_other], [new], [survived], [new_size])
-                
-                allele.set_freq('homo',(new_homo_from_homo+new_homo_from_hetero+ma.num('homo')*ma.survival('homo'))/new_size)
-                
-                allele.set_freq('hetero',(new_hetero_from_homo+new_hetero_from_hetero+ma.num('hetero')*ma.survival('hetero'))/new_size)                
-                
-                #print(allele.val(),[allele.num('homo')],[allele.num('hetero')])                   
+                allele.set_freq('homo',(new_homo_from_homo+new_homo_from_hetero+ma.num('homo')*ma.survival('homo'))/resize)
+                allele.set_freq('hetero',(new_hetero_from_homo+new_hetero_from_hetero+new_hetero_from_other+ma.num('hetero')*ma.survival('hetero'))/resize)                   
                 
             self._size = resize
                 
