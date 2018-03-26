@@ -5,10 +5,12 @@ Created on Wed Mar 21 19:30:31 2018
 @author: Guilherme Pata
 """   
 
+from sympy import symbols
+
 def fun1(x,y,z):
-    return 1  
+    return 4
 def fun2(x,y,z):
-    return 0
+    return 1
 
 class allele:
     def __init__(self,val,homofreq,heterofreq,dominant=False,locus='?'):
@@ -45,7 +47,7 @@ class allele:
     def set_locus(self,locus):
         self._locus = locus
     def set_freq(self,kind,freq):
-        assert(freq <= 1)
+        #assert(freq <= 1)
         if kind == 'homo':
             self._homofreq = freq
         elif kind == 'hetero':
@@ -62,21 +64,21 @@ class allele:
         else:
             return 0
             
-    def deathrate(self,kind):
+    def survival(self,kind):
         if kind == 'homo' and self._homofreq!=0:
-            return self.locus().deathrate(self,self)
+            return self.locus().survival(self,self)
         elif kind == 'hetero' and self._heterofreq!=0:
-            return sum([self.locus().deathrate(self,a)*a.freq('hetero') for a in self.locus().genepool() if a is not self])/sum([a.freq('hetero') for a in self.locus().genepool() if a is not self])
+            return sum([self.locus().survival(self,a)*a.freq('hetero') for a in self.locus().genepool() if a is not self])/sum([a.freq('hetero') for a in self.locus().genepool() if a is not self])
         else:
             return 0
         
 class locus:
-    def __init__(self,name,pop='?',offspring=fun1,deathrate=fun2):
+    def __init__(self,name,pop='?',offspring=fun1,survival=fun2):
         self._name = name
         self._pop = pop
         self._genepool = []
         self._offspring = offspring
-        self._deathrate = deathrate
+        self._survival = survival
         
     def name(self):
         return self._name
@@ -88,9 +90,9 @@ class locus:
     def offspring(self,a,b):
         assert (type(a) is allele and type(b) is allele)
         return self._offspring(a,b,self.pop())
-    def deathrate(self,a,b):
+    def survival(self,a,b):
         assert (type(a) is allele and type(b) is allele)
-        return self._deathrate(a,b,self.pop())
+        return self._survival(a,b,self.pop())
         
     def set_pop(self,pop):
         self._pop = pop
@@ -102,13 +104,13 @@ class locus:
         self._genepool = self._genepool + [allele]
         
     def copy(self):
-        copy = locus(self._name,self._pop,self._offspring,self._deathrate)
+        copy = locus(self._name,self._pop,self._offspring,self._survival)
         for a in self._genepool:
             copy.add_allele(a.copy())
         return copy
         
 class pop:
-    def __init__(self,l=[],size=1000):
+    def __init__(self,l=[],size=1024):
         self._genome = l
         self._size = size
         
@@ -133,14 +135,14 @@ class pop:
         return copy
         
     def grow(self):
-        print(self._size)
+        #print(self._size)
         m_pop = self.copy()
         for locus in self.genome():
             m_locus = [l for l in m_pop.genome() if l.name() == locus.name()][0]
             
-            new_size = sum([ a.num('homo')*(1+a.offspring('homo')-a.deathrate('homo')) + 0.5*a.num('hetero')*(1+a.offspring('hetero')-a.deathrate('hetero')) for a in m_locus.genepool() ])  
+            resize = sum([ a.num('homo')*(a.offspring('homo')+a.survival('homo')) + 0.5*a.num('hetero')*(a.offspring('hetero')+a.survival('hetero')) for a in m_locus.genepool() ])  
             
-            print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
+            #print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
             
             for allele in locus.genepool():
                 
@@ -148,7 +150,7 @@ class pop:
                 
                 #list_of_homo_offspring = [ ma.num('homo')*ma.freq('homo')*2*ma.offspring('homo')*1, ma.num('homo')*ma.freq('hetero')*(ma.offspring('homo')+ma.offspring('hetero'))*0.5, ma.num('hetero')*ma.freq('hetero')*2*ma.offspring('hetero')*0.25 ]
                 
-                #new_homo_a = sum( list_of_homo_offspring ) - ma.num('homo')*ma.deathrate('homo')
+                #new_homo_a = sum( list_of_homo_offspring ) - ma.num('homo')*ma.survival('homo')
                 
                 #allele.set_freq('homo',new_homo_a/new_size)
                 
@@ -174,7 +176,7 @@ class pop:
                 #
                 #list_of_hetero_offspring2 = [ ma.num('homo')*(1-ma.freq())*(ma.offspring('homo')+avg_other_offspring)*1, ma.num('hetero')*(1-ma.freq())*(ma.offspring('hetero')+avg_other_offspring)*0.5]
                 #
-                #new_hetero_a = sum( list_of_hetero_offspring1 + list_of_hetero_offspring2 ) - ma.num('hetero')*ma.deathrate('hetero')
+                #new_hetero_a = sum( list_of_hetero_offspring1 + list_of_hetero_offspring2 ) - ma.num('hetero')*ma.survival('hetero')
                 
                 #allele.set_freq('hetero',new_hetero_a/new_size)
                 
@@ -194,13 +196,23 @@ class pop:
                 
                 #new_other_from_hetero = from_hetero(ma.freq('homo')*0+ma.freq('hetero')*0.25+(1-ma.freq())*0.5)
                 
-                #from_other = sum([b.num('homo')*b.offspring('homo') for b in m_locus.genepool() if b is not ma])
+                from_other = sum([b.num('homo')*b.offspring('homo') for b in m_locus.genepool() if b is not ma])
+                
+                new = from_homo + from_hetero + from_other
+                
+                survived = ma.num('homo')*ma.survival('homo')+ma.num('hetero')*ma.survival('hetero')+sum([b.num('homo')*b.survival('homo') for b in m_locus.genepool() if b is not ma])
                                 
-                allele.set_freq('homo',(new_homo_from_homo+new_homo_from_hetero+ma.num('homo')*(1-ma.deathrate('homo')))/new_size)
+                new_size = survived + new
                 
-                allele.set_freq('hetero',(new_hetero_from_homo+new_hetero_from_hetero+ma.num('hetero')*(1-ma.deathrate('hetero')))/new_size)                
+                print(allele.val(), [from_homo], [from_hetero], [from_other], [new], [survived], [new_size])
                 
-            self._size = new_size
+                allele.set_freq('homo',(new_homo_from_homo+new_homo_from_hetero+ma.num('homo')*ma.survival('homo'))/new_size)
+                
+                allele.set_freq('hetero',(new_hetero_from_homo+new_hetero_from_hetero+ma.num('hetero')*ma.survival('hetero'))/new_size)                
+                
+                #print(allele.val(),[allele.num('homo')],[allele.num('hetero')])                   
+                
+            self._size = resize
                 
                 
     def evolve(self,gens,name='none',val='none'):
@@ -211,10 +223,11 @@ class pop:
             if not (name,val)==('none','none'):
                 print(self.freq(name,val))
                 
+i,x = symbols('i x')
 p=pop()
 bird = locus('bird')
 bird.add_allele(allele('a',0.5,0))
-bird.add_allele(allele('b',0.5,0.0))
+bird.add_allele(allele('b',0.5,0))
 p.add_locus(bird)
-p.evolve(10)
+p.evolve(5)
         
