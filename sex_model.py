@@ -123,10 +123,10 @@ class pop:
         locus.set_pop(self)
         self._genome = self._genome + [locus]
         
-    def freq(self,name,val):
+    def freq(self,name,val,kind='none'):
         locus = [l for l in self.genome() if l.name()==name][0]
         allele = [a for a in locus.genepool() if a.val()==val][0]
-        return allele.freq()
+        return allele.freq(kind)
     
     def copy(self):
         copy = pop(size=self._size)
@@ -142,7 +142,7 @@ class pop:
             
             resize = sum([ a.num('homo')*(a.offspring('homo')+a.survival('homo')) + 0.5*a.num('hetero')*(a.offspring('hetero')+a.survival('hetero')) for a in m_locus.genepool() ])  
             
-            print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
+            #print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
             
             for allele in locus.genepool():
                 
@@ -166,13 +166,13 @@ class pop:
             self._size = resize
                 
                 
-    def evolve(self,gens,name='none',val='none'):
+    def evolve(self,gens,name='none',val='none',kind='none'):
         if not (name,val)==('none','none'):
-            print(self.freq(name,val))
+            print(self.freq(name,val,kind))
         for x in range(gens):
             self.grow()
             if not (name,val)==('none','none'):
-                print(self.freq(name,val))
+                print(self.freq(name,val,kind))
                 
 i,x = symbols('i x')
 p=pop()
@@ -180,5 +180,5 @@ bird = locus('bird')
 bird.add_allele(allele('a',0.5,0))
 bird.add_allele(allele('b',0.5,0))
 p.add_locus(bird)
-p.evolve(5)
+p.evolve(100,'bird','a','homo')
         
