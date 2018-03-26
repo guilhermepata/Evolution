@@ -25,6 +25,8 @@ class allele:
         return self._homofreq
     def heterofreq(self):
         return self._heterofreq
+    def h_heterofreq(self):
+        return self._heterofreq/sum([a.heterofreq() for a in self.locus().genepool()])
     def freq(self):
         return self._homofreq+self._heterofreq
     def dominant(self):
@@ -46,14 +48,26 @@ class allele:
         self._heterofreq = heterofreq
         
     def homo_os(self):
-        return self.locus().offspring(self.val(),self.val())
+        if self._homofreq!=0:
+            return self.locus().offspring(self.val(),self.val())
+        else:
+            return 0
     def homo_dr(self):
-        return self.locus().deathrate(self.val(),self.val())
+        if self._homofreq!=0:
+            return self.locus().deathrate(self.val(),self.val())
+        else:
+            return 0
         
     def hetero_os(self):
-        return sum([self.locus().offspring(self.val(),a.val())*a.heterofreq() for a in self.locus().genepool() if a is not self])/sum([b.heterofreq() for b in self.locus().genepool() if b is not self])
+        if self._heterofreq!=0:
+            return sum([self.locus().offspring(self.val(),a.val())*a.heterofreq() for a in self.locus().genepool() if a is not self])/sum([b.heterofreq() for b in self.locus().genepool() if b is not self])
+        else:
+            return 0
     def hetero_dr(self):
-        return sum([self.locus().deathrate(self.val(),a.val())*a.heterofreq() for a in self.locus().genepool() if a is not self])/sum([b.heterofreq() for b in self.locus().genepool() if b is not self])
+        if self._heterofreq!=0:
+            return sum([self.locus().deathrate(self.val(),a.val())*a.heterofreq() for a in self.locus().genepool() if a is not self])/sum([b.heterofreq() for b in self.locus().genepool() if b is not self])
+        else:
+            return 0
         
     def hetero_os_wo(self,gene):
         return sum([self.locus().offspring(self.val(),a.val())*a.heterofreq() for a in self.locus().genepool() if a is not self and a is not gene])/sum([b.heterofreq() for b in self.locus().genepool() if b is not self and b is not gene])
