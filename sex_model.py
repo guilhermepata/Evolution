@@ -8,9 +8,9 @@ Created on Wed Mar 21 19:30:31 2018
 from sympy import symbols
 
 def fun1(x,y,z):
-    return 4
-def fun2(x,y,z):
     return 1
+def fun2(x,y,z):
+    return 0.5
 
 class allele:
     def __init__(self,val,homofreq,heterofreq,dominant=False,locus='?'):
@@ -47,7 +47,7 @@ class allele:
     def set_locus(self,locus):
         self._locus = locus
     def set_freq(self,kind,freq):
-        #assert(freq <= 1)
+        assert(freq <= 1)
         if kind == 'homo':
             self._homofreq = freq
         elif kind == 'hetero':
@@ -142,7 +142,7 @@ class pop:
             
             resize = sum([ a.num('homo')*(a.offspring('homo')+a.survival('homo')) + 0.5*a.num('hetero')*(a.offspring('hetero')+a.survival('hetero')) for a in m_locus.genepool() ])  
             
-            #print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
+            print(sum([a.freq('homo') + 0.5*a.freq('hetero') for a in m_locus.genepool()]))
             
             for allele in locus.genepool():
                 
@@ -168,17 +168,17 @@ class pop:
                 
     def evolve(self,gens,name='none',val='none',kind='none'):
         if not (name,val)==('none','none'):
-            print(self.freq(name,val,kind))
+            print([self.freq(name,val,kind)])
         for x in range(gens):
             self.grow()
             if not (name,val)==('none','none'):
-                print(self.freq(name,val,kind))
+                print([self.freq(name,val,kind)])
                 
 i,x = symbols('i x')
 p=pop()
 bird = locus('bird')
-bird.add_allele(allele('a',0.5,0))
-bird.add_allele(allele('b',0.5,0))
+bird.add_allele(allele('a',0,1))
+bird.add_allele(allele('b',0,1))
 p.add_locus(bird)
 p.evolve(100,'bird','a','homo')
         
